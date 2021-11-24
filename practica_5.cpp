@@ -14,7 +14,7 @@
 
 using namespace std;
 #define COUNT 10
-string ARCHIVO_ARBOL = "Arbol.txt";
+string ARCHIVO_ARBOL = "Arbol.txt"; // nombre del archivo indizado para generar el arbol
 
 class Arbol
 {
@@ -33,6 +33,7 @@ public:
     int generarLlave() {
         string temp;
         int valor;
+        srand(time(NULL));
         valor = rand() % (999-0)+1;
 
         if (valor < 10) {
@@ -67,141 +68,6 @@ public:
         }
     }
 
-    void inorder(Arbol **aux)
-    {
-        if (*aux != nullptr)
-        {
-            inorder(((&(*aux)->hijoIzquierdo)));
-            if ((*aux)->llave < 10000)
-            {
-                cout << (*aux)->llave << "||";
-            }
-            inorder(((&(*aux)->hijoDerecho)));
-        }
-    }
-
-    void preorder(Arbol **aux)
-    {
-        if (*aux != nullptr)
-        {
-            if ((*aux)->llave < 10000)
-            {
-                cout << (*aux)->llave << "||";
-            }
-            preorder(((&(*aux)->hijoIzquierdo)));
-            preorder(((&(*aux)->hijoDerecho)));
-        }
-    }
-
-    void postorder(Arbol **aux)
-    {
-        if (*aux != nullptr)
-        {
-            postorder(((&(*aux)->hijoIzquierdo)));
-            postorder(((&(*aux)->hijoDerecho)));
-            if ((*aux)->llave < 10000)
-            {
-                cout << (*aux)->llave << "||";
-            }
-        }
-    }
-
-    void elimina(Arbol **subarbol, int llave)
-    {
-
-        if (*subarbol == nullptr)
-        {
-            return;
-        }
-        if ((*subarbol)->llave == llave)
-        {
-            if ((*subarbol)->hijoIzquierdo == nullptr && (*subarbol)->hijoDerecho == nullptr)
-            {
-                delete *subarbol;
-                *subarbol = nullptr;
-                return;
-            }
-
-            if ((*subarbol)->hijoIzquierdo == nullptr && (*subarbol)->hijoDerecho != nullptr)
-            {
-                (*subarbol)->llave = (*subarbol)->hijoDerecho->llave;
-                delete (*subarbol)->hijoDerecho;
-                (*subarbol)->hijoDerecho = nullptr;
-                return;
-            }
-
-            if ((*subarbol)->hijoIzquierdo != nullptr && (*subarbol)->hijoDerecho == nullptr)
-            {
-                (*subarbol)->llave = (*subarbol)->hijoIzquierdo->llave;
-                delete (*subarbol)->hijoIzquierdo;
-                (*subarbol)->hijoIzquierdo = nullptr;
-                return;
-            }
-
-            if ((*subarbol)->hijoIzquierdo != nullptr && (*subarbol)->hijoDerecho != nullptr)
-            {
-                Arbol *aux = nullptr;
-                aux = new Arbol;
-                aux = (*subarbol);
-
-                Arbol *auxz = nullptr;
-                auxz = new Arbol;
-                auxz = (*subarbol)->hijoDerecho;
-                cout << auxz->llave;
-
-                Arbol *auxi = nullptr;
-                auxi = new Arbol;
-                auxi = (*subarbol)->hijoDerecho;
-
-                Arbol *auxe = nullptr;
-                auxe = new Arbol;
-
-                while (auxz->hijoIzquierdo != nullptr)
-                {
-
-                    auxz = auxz->hijoIzquierdo;
-                }
-                cout << auxz->llave;
-                //Solo una vuelta
-                if ((*subarbol)->hijoDerecho == auxz)
-                {
-                    auxe = (*subarbol)->hijoDerecho;
-
-                    (*subarbol)->hijoDerecho = (*subarbol)->hijoDerecho->hijoDerecho;
-                }
-                else
-                {
-
-                    while (auxi->hijoIzquierdo != auxz)
-                    {
-                        if (auxi->hijoIzquierdo->hijoIzquierdo->llave == llave)
-                            break;
-                        auxi = auxi->hijoIzquierdo;
-                    }
-                }
-
-                if ((*subarbol)->hijoDerecho != auxz)
-                {
-                    auxi->hijoIzquierdo = nullptr;
-                }
-
-                aux->llave = auxz->llave;
-                return;
-            }
-        }
-        else
-        {
-            if ((*subarbol)->llave > llave)
-            {
-                elimina(((&(*subarbol)->hijoIzquierdo)), llave);
-            }
-            else
-            {
-                elimina(((&(*subarbol)->hijoDerecho)), llave);
-            }
-        }
-    }
-
     void buscar(Arbol *&aux, int llave)
     {
         if (aux == nullptr)
@@ -223,17 +89,6 @@ public:
             cout << "El dato no fue encontrado" << endl;
         }
     }
-
-    void anula(Arbol *&aux)
-    {
-        if (aux == nullptr)
-            return;
-
-        anula(aux->hijoIzquierdo);
-        anula(aux->hijoDerecho);
-        delete aux;
-        aux = nullptr;
-    }
 };
 
 void padding(char ch, int n)
@@ -254,21 +109,30 @@ void structure(Arbol *root, int level)
     {
         structure(root->hijoDerecho, level + 1);
         padding('\t', level);
-        printf("%d|%d\n", root->nrr, root->llave);
+        printf("[%d|%d]\n", root->nrr, root->llave);
         structure(root->hijoIzquierdo, level + 1);
     }
 }
 
+// Genera un archivo indizado en forma de árbol binario
 void escribirArbol(Arbol *root) {
     ofstream escribir;
     string llaveTemp;
     string nrrTemp;
     string hd;
     string hi;
+
+    // inicia el flujo de escritura
     escribir.open(ARCHIVO_ARBOL, ios::app);
 
+    // Comprobamos que el arbol no este vacio
     if (root != nullptr) {
 
+        /*
+            Comprueba que exista un hijo izquierdo
+            si existe toma el nrr y le agrega espacios para acomodar en la tabla
+            si no existe apunta a -1
+        */
         if (root->hijoIzquierdo != nullptr)
         {
             if (root->hijoIzquierdo->nrr < 10)
@@ -286,6 +150,11 @@ void escribirArbol(Arbol *root) {
             hi = " -1";
         }
 
+        /*
+            Comprueba que exista un hijo izquierdo
+            si existe toma el nrr y le agrega espacios para acomodar en la tabla
+            si no existe apunta a -1
+        */
         if (root->hijoDerecho != nullptr) {
             if (root->hijoDerecho->nrr < 10) {
                 hd.append("  ");
@@ -297,6 +166,9 @@ void escribirArbol(Arbol *root) {
             hd = " -1";
         }
 
+        /*
+            modifica la llave para que sea de 3 digitos
+        */
         if (root->llave < 10) {
             llaveTemp.append("00");
         } else if (root->llave >= 10 && root->llave < 100) {
@@ -305,6 +177,9 @@ void escribirArbol(Arbol *root) {
         
         llaveTemp.append(to_string(root->llave));
 
+        /*
+            Agrega espacios al nrr para que se acomode en la tabla
+        */
         if (root->nrr < 10) {
             nrrTemp.append("  ");
         } else if (root->nrr >= 10 && root->nrr < 100) {
@@ -312,11 +187,17 @@ void escribirArbol(Arbol *root) {
         }
         nrrTemp.append(to_string(root->nrr));
 
+        // Escribe la informacion del nodo
         escribir << nrrTemp << "|" << llaveTemp << "|" << hd << "|" << hi << "|" << endl;
+
+        // Escribe la informacion del hijo derecho
         escribirArbol(root->hijoDerecho);
+
+        // Escribe la informacion del hijo izquierdo
         escribirArbol(root->hijoIzquierdo);
     }
 
+    // cierra el flujo de escritura
     escribir.close();
 }
 
@@ -324,7 +205,7 @@ int main()
 {
     int nrr = 0;
     int res = 0;
-    int dato = 0;
+    int llave = 0;
     int resBusqueda = 0;
     ofstream escribir;
     Arbol *ancla;
@@ -338,11 +219,11 @@ int main()
         cout << "1 > Insertar registro" << endl;
         // cout << "2 > Imprimir en preOrden" << endl;
         // cout << "3 > Imprimir en postOrden" << endl;
-        cout << "4 > Imprimir en Orden" << endl;
-        cout << "5 > Imprimir Arbol" << endl;
+        // cout << "4 > Imprimir en Orden" << endl;
+        cout << "2 > Imprimir Arbol" << endl;
         // cout << "6 > Eliminar" << endl;
         // cout << "7 > Anular" << endl;
-        cout << "8 > Mostrar registro" << endl;
+        cout << "3 > Mostrar registro" << endl;
         cout << "0 > Salir" << endl;
         cout << "Respuesta >";
         cin >> res;
@@ -350,57 +231,40 @@ int main()
         switch (res)
         {
         case 1:
-            dato = ancla->generarLlave();
-            cout << "Llave generada " << dato << endl;
-            ancla->insertar(&ancla, dato, nrr);
+            llave = ancla->generarLlave();
+            cout << "Llave generada " << llave << endl;
+            ancla->insertar(&ancla, llave, nrr);
             cout << "Dato ingresado correctamente" << endl;
             cin.get();
 
+            // Elimina el archivo anterior
             remove("Arbol.txt");
+
+            // Crea el archivo nuevo
             escribir.open(ARCHIVO_ARBOL, ios::app);
+
+            // escribe los encabezados
             escribir << "NRR|LLV| HD| HI|" << endl;
+
+            // cierra el flujo de escritura
             escribir.close();
+
+            // escribe el archivo indizado en forma de arbol
             escribirArbol(ancla);
+
+            // aumenta el nrr
             nrr++;
             break;
         case 2:
-            ancla->preorder(&ancla);
-            cin.get();
-
-            break;
-        case 3:
-            ancla->postorder(&ancla);
-            cin.get();
-
-            break;
-        case 4:
-            ancla->inorder(&ancla);
-            cin.get();
-
-            break;
-        case 5:
-            cout << "nrr|llave" << endl << endl;
+            cout << "[nrr|llave]" << endl << endl;
             structure(ancla, 0);
             cin.get();
 
             break;
-        case 6:
-            cout << "Ingresa el numero que quieres eliminar....";
-            cin >> dato;
-            ancla->elimina(&ancla, dato);
-            cin.get();
-
-            break;
-        case 7:
-            ancla->anula(ancla);
-            cout << "Anulado correctamente";
-            cin.get();
-
-            break;
-        case 8:
+        case 3:
             cout << "Ingresa el numero que quieres buscar....";
-            cin >> dato;
-            ancla->buscar(ancla, dato);
+            cin >> llave;
+            ancla->buscar(ancla, llave);
             cin.get();
 
             break;
