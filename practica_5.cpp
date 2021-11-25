@@ -11,6 +11,7 @@
 #include <string>
 #include <stdio.h>
 #include <fstream>
+#include <limits>
 
 using namespace std;
 #define COUNT 10
@@ -30,15 +31,19 @@ public:
         this->hijoDerecho = nullptr;
     }
 
-    int generarLlave() {
+    int generarLlave()
+    {
         string temp;
         int valor;
         srand(time(NULL));
-        valor = rand() % (999-0)+1;
+        valor = rand() % (999 - 0) + 1;
 
-        if (valor < 10) {
+        if (valor < 10)
+        {
             temp.append("00" + to_string(valor));
-        } else if (valor >= 10 && valor < 100) {
+        }
+        else if (valor >= 10 && valor < 100)
+        {
             temp.append("0" + to_string(valor));
         }
 
@@ -47,7 +52,7 @@ public:
 
     void insertar(Arbol **aux, int llave, int nrr)
     {
-        if (*aux == nullptr)
+        if (*aux == nullptr) // si el apuntador es nulo creamos un nuevo nodo
         {
             (*aux) = new Arbol;
             (*aux)->llave = llave;
@@ -55,38 +60,56 @@ public:
             (*aux)->hijoDerecho = nullptr;
             (*aux)->hijoIzquierdo = nullptr;
         }
-        else
+        else // si no
         {
-            if (llave < (*aux)->llave)
+            if (llave < (*aux)->llave) // comparamos si la llave que recibimos es menor al nodo en el que nos encontramos
             {
-                insertar(((&(*aux)->hijoIzquierdo)), llave, nrr);
+                insertar(((&(*aux)->hijoIzquierdo)), llave, nrr); // si lo es llamamos una funcion recursiva que llama la funcion insertar y tomamos el hijo izquierdo
             }
             else
             {
-                insertar(((&(*aux)->hijoDerecho)), llave, nrr);
+                insertar(((&(*aux)->hijoDerecho)), llave, nrr); // si es mayor llamamos ala funcion recursiva tomando el de la derecha
             }
         }
     }
 
     void buscar(Arbol *&aux, int llave)
     {
-        if (aux == nullptr)
+        ifstream reg;
+        string buffer;
+        buffer.clear();
+        reg.open("Productos_Media.txt"); // se abre el archivo en modo de lectura
+
+        if (aux == nullptr) // si lo que regresamos es nulo repetimos
         {
             return;
         }
 
-        buscar(aux->hijoIzquierdo, llave);
+        buscar(aux->hijoIzquierdo, llave); // llamamos funcion recursiva e hijo izquierdo
 
-        buscar(aux->hijoDerecho, llave);
+        buscar(aux->hijoDerecho, llave); // llamamos funcion recursiva para recorrer el hijo derecho
 
-        if (aux->llave == llave)
+        if (aux->llave == llave) // comparamos si el nodo tiene la llave que nos pasaron
         {
             cout << "El dato:" << llave << "| Fue encontrado" << endl;
+            cout << "nrr" << aux->nrr << endl;
+            reg.seekg(0, reg.beg); // posicionarnos al inicio del archivo
+            int i = 0;
+            for (i = 0; i <= aux->nrr; i++)
+            { // leer tantas lineas para llegar ala deseada
+                buffer.clear();
+                getline(reg, buffer); // leer linea
+            }
+
+            cout << buffer; // mostrar informacion
+            reg.close();
             return;
         }
         else
         {
-            cout << "El dato no fue encontrado" << endl;
+
+            reg.close();
+            buffer.clear();
         }
     }
 };
@@ -115,7 +138,8 @@ void structure(Arbol *root, int level)
 }
 
 // Genera un archivo indizado en forma de árbol binario
-void escribirArbol(Arbol *root) {
+void escribirArbol(Arbol *root)
+{
     ofstream escribir;
     string llaveTemp;
     string nrrTemp;
@@ -126,7 +150,8 @@ void escribirArbol(Arbol *root) {
     escribir.open(ARCHIVO_ARBOL, ios::app);
 
     // Comprobamos que el arbol no este vacio
-    if (root != nullptr) {
+    if (root != nullptr)
+    {
 
         /*
             Comprueba que exista un hijo izquierdo
@@ -155,34 +180,46 @@ void escribirArbol(Arbol *root) {
             si existe toma el nrr y le agrega espacios para acomodar en la tabla
             si no existe apunta a -1
         */
-        if (root->hijoDerecho != nullptr) {
-            if (root->hijoDerecho->nrr < 10) {
+        if (root->hijoDerecho != nullptr)
+        {
+            if (root->hijoDerecho->nrr < 10)
+            {
                 hd.append("  ");
-            } else if (root->hijoDerecho->nrr >= 10 && root->hijoDerecho->nrr < 100) {
+            }
+            else if (root->hijoDerecho->nrr >= 10 && root->hijoDerecho->nrr < 100)
+            {
                 hd.append(" ");
             }
             hd.append(to_string(root->hijoDerecho->nrr));
-        } else {
+        }
+        else
+        {
             hd = " -1";
         }
 
         /*
             modifica la llave para que sea de 3 digitos
         */
-        if (root->llave < 10) {
+        if (root->llave < 10)
+        {
             llaveTemp.append("00");
-        } else if (root->llave >= 10 && root->llave < 100) {
+        }
+        else if (root->llave >= 10 && root->llave < 100)
+        {
             llaveTemp.append("0");
         }
-        
+
         llaveTemp.append(to_string(root->llave));
 
         /*
             Agrega espacios al nrr para que se acomode en la tabla
         */
-        if (root->nrr < 10) {
+        if (root->nrr < 10)
+        {
             nrrTemp.append("  ");
-        } else if (root->nrr >= 10 && root->nrr < 100) {
+        }
+        else if (root->nrr >= 10 && root->nrr < 100)
+        {
             nrrTemp.append(" ");
         }
         nrrTemp.append(to_string(root->nrr));
@@ -201,6 +238,11 @@ void escribirArbol(Arbol *root) {
     escribir.close();
 }
 
+string concatenar(string buffer)
+{
+    return (buffer + '|');
+}
+
 int main()
 {
     int nrr = 0;
@@ -210,19 +252,17 @@ int main()
     ofstream escribir;
     Arbol *ancla;
     ancla = new Arbol;
+    string buffreg;
+    ofstream registros;
 
+    string respuesta;
     do
     {
         cin.get();
         system("clear");
         cout << "Arbol binario" << endl;
         cout << "1 > Insertar registro" << endl;
-        // cout << "2 > Imprimir en preOrden" << endl;
-        // cout << "3 > Imprimir en postOrden" << endl;
-        // cout << "4 > Imprimir en Orden" << endl;
         cout << "2 > Imprimir Arbol" << endl;
-        // cout << "6 > Eliminar" << endl;
-        // cout << "7 > Anular" << endl;
         cout << "3 > Mostrar registro" << endl;
         cout << "0 > Salir" << endl;
         cout << "Respuesta >";
@@ -231,8 +271,62 @@ int main()
         switch (res)
         {
         case 1:
+            respuesta.clear();
+            buffreg.clear();
+            registros.open("Productos_Media.txt", std::fstream::app); // abrimos el archivo
+
             llave = ancla->generarLlave();
-            cout << "Llave generada " << llave << endl;
+            cout << "Llave generada " << llave << endl; // generacion de llave
+            buffreg += to_string(llave);                // concatenar llave
+            buffreg += '|';
+
+            // ingresar datos del registro
+            cout << "Ingresa un nombre" << endl; //pedir datos
+            fflush(stdin);                       // limpieza de buffer
+            cin.clear();
+
+            cin >> respuesta; // leer respuesta
+            cin.clear();
+
+            buffreg += respuesta; // concatenar respuesta al buffer
+            buffreg += '|';       // agregar delimitador
+            cout << "Ingresa una descripcion" << endl;
+            cin.clear();
+            fflush(stdin);
+
+            cin >> respuesta;
+            buffreg += respuesta;
+            buffreg += '|';
+            cout << "Ingresa el precio" << endl;
+            cin.clear();
+            fflush(stdin);
+
+            cin >> respuesta;
+            buffreg += respuesta;
+            buffreg += '|';
+            cout << "Ingresa la cantidad" << endl;
+            cin.clear();
+            fflush(stdin);
+
+            cin >> respuesta;
+            buffreg += respuesta;
+            buffreg += '|';
+            cout << "Ingresa la provicincia" << endl;
+            cin.clear();
+            fflush(stdin);
+
+            cin >> respuesta;
+            buffreg += respuesta;
+            buffreg += '|';
+            cout << "Ingresa la categoria" << endl;
+            cin.clear();
+            fflush(stdin);
+
+            cin >> respuesta;
+            buffreg += respuesta;
+            buffreg += '|';
+
+            cout << "registro:" << buffreg;
             ancla->insertar(&ancla, llave, nrr);
             cout << "Dato ingresado correctamente" << endl;
             cin.get();
@@ -252,11 +346,14 @@ int main()
             // escribe el archivo indizado en forma de arbol
             escribirArbol(ancla);
 
+            registros << buffreg << endl;
+            registros.close();
             // aumenta el nrr
             nrr++;
             break;
         case 2:
-            cout << "[nrr|llave]" << endl << endl;
+            cout << "[nrr|llave]" << endl
+                 << endl;
             structure(ancla, 0);
             cin.get();
 
